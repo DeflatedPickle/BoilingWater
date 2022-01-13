@@ -25,7 +25,7 @@ public class MixinAbstractBlock {
       var block = world.getBlockState(pos.down().down()).getBlock();
 
       if (this instanceof Boiling) {
-        // world.createAndScheduleBlockTick(pos, (Block) (Object) this, 20);
+        world.createAndScheduleBlockTick(pos, (Block) (Object) this, 20);
         ((Boiling) this).setBoiling(block instanceof AbstractFireBlock);
       }
     }

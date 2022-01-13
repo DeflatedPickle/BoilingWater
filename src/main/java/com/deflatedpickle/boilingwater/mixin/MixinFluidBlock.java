@@ -8,19 +8,24 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @SuppressWarnings({"UnusedMixin", "unused"})
 @Mixin(FluidBlock.class)
-public class MixinFluidBlock extends Block implements Boiling {
+public abstract class MixinFluidBlock extends Block implements Boiling {
   public boolean boiling = false;
 
   public MixinFluidBlock(Settings settings) {
@@ -37,6 +42,18 @@ public class MixinFluidBlock extends Block implements Boiling {
     boiling = value;
   }
 
+  public void update(BlockState state, WorldAccess world, BlockPos pos) {
+    if (state.getFluidState().getFluid() == Fluids.WATER) {
+      world.createAndScheduleBlockTick(pos, this, 20);
+    }
+  }
+
+  @Override
+  public void prepare(
+      BlockState state, WorldAccess world, BlockPos pos, int flags, int maxUpdateDepth) {
+    update(state, world, pos);
+  }
+
   @Inject(method = "onBlockAdded", at = @At("HEAD"))
   public void onBlockAdded(
       BlockState state,
@@ -45,9 +62,31 @@ public class MixinFluidBlock extends Block implements Boiling {
       BlockState oldState,
       boolean notify,
       CallbackInfo ci) {
-    if (state.getFluidState().getFluid() == Fluids.WATER) {
-      world.createAndScheduleBlockTick(pos, this, 20);
-    }
+    update(state, world, pos);
+  }
+
+  @Inject(method = "getStateForNeighborUpdate", at = @At("HEAD"))
+  public void getStateForNeighborUpdate(
+      BlockState state,
+      Direction direction,
+      BlockState neighborState,
+      WorldAccess world,
+      BlockPos pos,
+      BlockPos neighborPos,
+      CallbackInfoReturnable<BlockState> cir) {
+    update(state, world, pos);
+  }
+
+  @Inject(method = "neighborUpdate", at = @At("HEAD"))
+  public void neighborUpdate(
+      BlockState state,
+      World world,
+      BlockPos pos,
+      Block block,
+      BlockPos fromPos,
+      boolean notify,
+      CallbackInfo ci) {
+    update(state, world, pos);
   }
 
   @Override
@@ -55,26 +94,30 @@ public class MixinFluidBlock extends Block implements Boiling {
     super.randomDisplayTick(state, world, pos, random);
 
     if (isBoiling()) {
+      ParticleEffect particle = null;
+      SoundEvent sound = null;
+      float volume = 0f;
+      float pitch = 0f;
+
       if (random.nextInt(20) == 0) {
-        world.playSound(
-            pos.getX(),
-            pos.getY(),
-            pos.getZ(),
-            SoundEvents.BLOCK_FIRE_EXTINGUISH,
-            SoundCategory.BLOCKS,
-            0.2f,
-            1.0f,
-            true);
+        particle = ParticleTypes.SMOKE;
+        sound = SoundEvents.BLOCK_FIRE_EXTINGUISH;
+        volume = 0.2f;
+        pitch = 1f;
+      } else if (random.nextInt(2) == 0) {
+        particle = ParticleTypes.BUBBLE;
+        sound = SoundEvents.BLOCK_BUBBLE_COLUMN_BUBBLE_POP;
+        volume = 2.5f;
+        pitch = random.nextFloat(0.5f, 1);
       }
 
-      world.addParticle(
-          ParticleTypes.SMOKE,
-          pos.getX() + random.nextDouble(1),
-          pos.getY() + random.nextDouble(0.8, 1.0),
-          pos.getZ() + random.nextDouble(1),
-          0.0,
-          0.0,
-          0.0);
+      if (particle != null && sound != null) {
+        var x = pos.getX() + random.nextDouble(1);
+        var z = pos.getZ() + random.nextDouble(1);
+
+        world.addParticle(particle, x, pos.getY() + 1, z, 0, 0, 0);
+        world.playSound(x, pos.getY(), z, sound, SoundCategory.BLOCKS, volume, pitch, true);
+      }
     }
   }
 }
