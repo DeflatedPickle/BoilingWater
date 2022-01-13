@@ -2,7 +2,7 @@
 
 package com.deflatedpickle.boilingwater.mixin;
 
-import com.deflatedpickle.boilingwater.api.Boiling;
+import com.deflatedpickle.boilingwater.api.Boilable;
 import java.util.Random;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.AbstractFireBlock;
@@ -24,9 +24,9 @@ public class MixinAbstractBlock {
     if ((Object) this instanceof Block) {
       var block = world.getBlockState(pos.down().down()).getBlock();
 
-      if (this instanceof Boiling) {
+      if (this instanceof Boilable) {
         world.createAndScheduleBlockTick(pos, (Block) (Object) this, 20);
-        ((Boiling) this).setBoiling(block instanceof AbstractFireBlock);
+        ((Boilable) this).setBoiling(block instanceof AbstractFireBlock);
       }
     }
   }

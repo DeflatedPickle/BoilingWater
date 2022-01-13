@@ -2,7 +2,7 @@
 
 package com.deflatedpickle.boilingwater.mixin;
 
-import com.deflatedpickle.boilingwater.api.Boiling;
+import com.deflatedpickle.boilingwater.api.Boilable;
 import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @SuppressWarnings({"UnusedMixin", "unused"})
 @Mixin(FluidBlock.class)
-public abstract class MixinFluidBlock extends Block implements Boiling {
+public abstract class MixinFluidBlock extends Block implements Boilable {
   public boolean boiling = false;
 
   public MixinFluidBlock(Settings settings) {
@@ -99,8 +99,8 @@ public abstract class MixinFluidBlock extends Block implements Boiling {
       float volume = 0f;
       float pitch = 0f;
 
-      if (random.nextInt(20) == 0) {
-        particle = ParticleTypes.SMOKE;
+      if (random.nextInt(10) == 0) {
+        particle = ParticleTypes.POOF;
         sound = SoundEvents.BLOCK_FIRE_EXTINGUISH;
         volume = 0.2f;
         pitch = 1f;

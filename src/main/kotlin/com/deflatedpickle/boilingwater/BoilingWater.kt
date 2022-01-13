@@ -3,6 +3,9 @@
 package com.deflatedpickle.boilingwater
 
 import net.fabricmc.api.ModInitializer
+import net.minecraft.item.ItemStack
+import net.minecraft.recipe.SmeltingRecipe
+import net.minecraft.world.World
 
 @Suppress("UNUSED")
 object BoilingWater : ModInitializer {
@@ -15,4 +18,20 @@ object BoilingWater : ModInitializer {
     override fun onInitialize() {
         println(listOf(MOD_ID, NAME, GROUP, AUTHOR, VERSION))
     }
+
+    fun hasCookingRecipe(stack: ItemStack, world: World) = world.recipeManager.values()
+        .filterIsInstance<SmeltingRecipe>()
+        .any { r ->
+            r.ingredients[0].matchingStacks.toList()
+                .map { s -> s.item }
+                .any { i -> i == stack.item }
+        }
+
+    fun getCookingRecipe(stack: ItemStack, world: World) = world.recipeManager.values()
+        .filterIsInstance<SmeltingRecipe>()
+        .first { r ->
+            r.ingredients[0].matchingStacks.toList()
+                .map { s -> s.item }
+                .any { i -> i == stack.item }
+        }
 }

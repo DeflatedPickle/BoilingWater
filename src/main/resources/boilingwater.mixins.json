@@ -2,7 +2,8 @@
     "mixins": [
         "MixinAbstractBlock",
         "MixinFluidBlock",
-        "MixinEntity"
+        "MixinEntity",
+        "MixinItemEntity"
     ],
     "minVersion": "0.8",
     "package": "${group}.${id}.mixin",

@@ -2,7 +2,8 @@
 
 package com.deflatedpickle.boilingwater.mixin;
 
-import com.deflatedpickle.boilingwater.api.Boiling;
+import com.deflatedpickle.boilingwater.api.Boilable;
+import com.deflatedpickle.boilingwater.api.Cookable;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -73,7 +74,7 @@ public abstract class MixinEntity {
     var block = getWorld().getBlockState(getBlockPos()).getBlock();
 
     if ((Object) this instanceof LivingEntity && block instanceof FluidBlock) {
-      if (block instanceof Boiling && ((Boiling) block).isBoiling()) {
+      if (block instanceof Boilable && ((Boilable) block).isBoiling()) {
         // setBoilingTicks(getBoilingTicks() + 1);
         if (getBoilingTicks() == 0) {
           setBoilingFor(4);
@@ -101,6 +102,10 @@ public abstract class MixinEntity {
     if (getBoilingTicks() > 0) {
       nbt.putInt("TicksBoiling", getBoilingTicks());
     }
+
+    if (this instanceof Cookable && ((Cookable) this).isCooking()) {
+      nbt.putInt("TicksCooking", ((Cookable) this).getCookingTime());
+    }
   }
 
   @Inject(
@@ -111,6 +116,18 @@ public abstract class MixinEntity {
               shift = At.Shift.AFTER,
               target = "Lnet/minecraft/entity/Entity;setFrozenTicks(I)V"))
   public void readNbt(NbtCompound nbt, CallbackInfo ci) {
-    setBoilingTicks(nbt.getInt("TicksBoiling"));
+    try {
+      setBoilingTicks(nbt.getInt("TicksBoiling"));
+    } catch (Exception e) {
+      setBoilingTicks(0);
+    }
+
+    if (this instanceof Cookable) {
+      try {
+        ((Cookable) this).setCookingTime(nbt.getInt("TicksCooking"));
+      } catch (Exception e) {
+        ((Cookable) this).setCookingTime(0);
+      }
+    }
   }
 }
