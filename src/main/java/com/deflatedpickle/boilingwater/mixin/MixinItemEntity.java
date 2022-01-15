@@ -62,6 +62,11 @@ public abstract class MixinItemEntity extends Entity implements Cookable {
         * getStack().getCount();
   }
 
+  public int getAdjustedTime() {
+    return getNeededTime()
+        - ((Boilable) getBlockStateAtPos().getBlock()).getTemperature(world, getBlockPos());
+  }
+
   @Inject(method = "initDataTracker", at = @At("TAIL"))
   public void initDataTracker(CallbackInfo ci) {
     this.dataTracker.startTracking(COOKING_TICKS, 0);
@@ -70,10 +75,10 @@ public abstract class MixinItemEntity extends Entity implements Cookable {
   @Inject(method = "tick", at = @At("TAIL"))
   public void cook(CallbackInfo ci) {
     if (BoilingWater.INSTANCE.hasCookingRecipe(getStack(), world)) {
-      if (isCooking() && getCookingTime() < getNeededTime()) {
+      if (isCooking() && getCookingTime() < getAdjustedTime()) {
         setCookingTime(getCookingTime() + 1);
         world.addParticle(ParticleTypes.SMOKE, getX(), getY(), getZ(), 0, 0, 0);
-      } else if (getCookingTime() == getNeededTime()) {
+      } else if (isCooking() && getCookingTime() == getAdjustedTime()) {
         setStack(BoilingWater.INSTANCE.getCookingRecipe(getStack(), world).getOutput());
       }
     }

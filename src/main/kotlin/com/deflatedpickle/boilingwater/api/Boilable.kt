@@ -12,4 +12,5 @@ import net.minecraft.world.World
  */
 interface Boilable {
     fun isBoiling(world: World, pos: BlockPos): Boolean
+    fun getTemperature(world: World, pos: BlockPos): Int
 }
