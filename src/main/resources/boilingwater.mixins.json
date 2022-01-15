@@ -1,6 +1,5 @@
 {
     "mixins": [
-        "MixinAbstractBlock",
         "MixinFluidBlock",
         "MixinEntity",
         "MixinItemEntity"

@@ -4,6 +4,7 @@ package com.deflatedpickle.boilingwater.mixin;
 
 import com.deflatedpickle.boilingwater.api.Boilable;
 import java.util.Random;
+import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
@@ -26,26 +27,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @SuppressWarnings({"UnusedMixin", "unused"})
 @Mixin(FluidBlock.class)
 public abstract class MixinFluidBlock extends Block implements Boilable {
-  public boolean boiling = false;
-
   public MixinFluidBlock(Settings settings) {
     super(settings);
-  }
-
-  @Override
-  public boolean isBoiling() {
-    return boiling;
-  }
-
-  @Override
-  public void setBoiling(boolean value) {
-    boiling = value;
   }
 
   public void update(BlockState state, WorldAccess world, BlockPos pos) {
     if (state.getFluidState().getFluid() == Fluids.WATER) {
       world.createAndScheduleBlockTick(pos, this, 20);
     }
+  }
+
+  @Override
+  public boolean isBoiling(World world, BlockPos pos) {
+    return world.getBlockState(pos.down().down()).getBlock() instanceof AbstractFireBlock;
   }
 
   @Override
@@ -93,7 +87,7 @@ public abstract class MixinFluidBlock extends Block implements Boilable {
   public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
     super.randomDisplayTick(state, world, pos, random);
 
-    if (isBoiling()) {
+    if (isBoiling(world, pos)) {
       ParticleEffect particle = null;
       SoundEvent sound = null;
       float volume = 0f;

@@ -3,6 +3,7 @@
 package com.deflatedpickle.boilingwater.mixin;
 
 import com.deflatedpickle.boilingwater.BoilingWater;
+import com.deflatedpickle.boilingwater.api.Boilable;
 import com.deflatedpickle.boilingwater.api.Cookable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -10,7 +11,6 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.world.World;
@@ -41,7 +41,8 @@ public abstract class MixinItemEntity extends Entity implements Cookable {
 
   @Override
   public boolean isCooking() {
-    return getBlockStateAtPos().getFluidState().getFluid() == Fluids.WATER;
+    return getBlockStateAtPos().getBlock() instanceof Boilable
+        && ((Boilable) getBlockStateAtPos().getBlock()).isBoiling(world, getBlockPos());
   }
 
   @Override
