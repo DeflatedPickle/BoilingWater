@@ -3,6 +3,7 @@
 package com.deflatedpickle.boilingwater.mixin;
 
 import com.deflatedpickle.boilingwater.BoilingWater;
+import com.deflatedpickle.boilingwater.api.Boilable;
 import com.deflatedpickle.boilingwater.api.Cookable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -41,7 +42,8 @@ public abstract class MixinItemEntity extends Entity implements Cookable {
 
   @Override
   public boolean isCooking() {
-    return getBlockStateAtPos().getFluidState().getFluid() == Fluids.WATER;
+    return getBlockStateAtPos().getFluidState().getFluid() == Fluids.WATER
+        && ((Boilable) getBlockStateAtPos().getBlock()).isBoiling(world, getBlockPos());
   }
 
   @Override
@@ -69,10 +71,15 @@ public abstract class MixinItemEntity extends Entity implements Cookable {
   @Inject(method = "tick", at = @At("TAIL"))
   public void cook(CallbackInfo ci) {
     if (BoilingWater.INSTANCE.hasCookingRecipe(getStack(), world)) {
-      if (isCooking() && getCookingTime() < getNeededTime()) {
+      var adjustedTime =
+          Math.max(
+              1,
+              getNeededTime()
+                  - world.getBlockState(getBlockPos()).get(BoilingWater.INSTANCE.getBOILING()));
+      if (isCooking() && getCookingTime() < adjustedTime) {
         setCookingTime(getCookingTime() + 1);
         world.addParticle(ParticleTypes.SMOKE, getX(), getY(), getZ(), 0, 0, 0);
-      } else if (getCookingTime() == getNeededTime()) {
+      } else if (getCookingTime() == adjustedTime) {
         setStack(BoilingWater.INSTANCE.getCookingRecipe(getStack(), world).getOutput());
       }
     }

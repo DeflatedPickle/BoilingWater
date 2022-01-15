@@ -1,9 +1,12 @@
 {
     "mixins": [
-        "MixinAbstractBlock",
         "MixinFluidBlock",
         "MixinEntity",
-        "MixinItemEntity"
+        "MixinItemEntity",
+        "MixinTorchBlock",
+        "MixinFireBlock",
+        "MixinSoulFireBlock",
+        "MixinMagmaBlock"
     ],
     "minVersion": "0.8",
     "package": "${group}.${id}.mixin",

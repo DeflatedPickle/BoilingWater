@@ -5,7 +5,8 @@
         "java": ">=${java}",
         "fabric": ">=${fabric}",
         "fabricloader": ">=${loader}",
-        "fabric-language-kotlin": ">=${adapter}"
+        "fabric-language-kotlin": ">=${adapter}",
+        "statement": ">=4.2.1"
     },
     "accessWidener": "${id}.accesswidener",
     "icon": "assets/${id}/icon.png",

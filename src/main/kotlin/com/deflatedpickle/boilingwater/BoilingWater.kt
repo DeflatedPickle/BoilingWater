@@ -5,6 +5,7 @@ package com.deflatedpickle.boilingwater
 import net.fabricmc.api.ModInitializer
 import net.minecraft.item.ItemStack
 import net.minecraft.recipe.SmeltingRecipe
+import net.minecraft.state.property.IntProperty
 import net.minecraft.world.World
 
 @Suppress("UNUSED")
@@ -14,6 +15,8 @@ object BoilingWater : ModInitializer {
     private const val GROUP = "$[group]"
     private const val AUTHOR = "$[author]"
     private const val VERSION = "$[version]"
+
+    val BOILING = IntProperty.of("boiling", 0, 100)
 
     override fun onInitialize() {
         println(listOf(MOD_ID, NAME, GROUP, AUTHOR, VERSION))

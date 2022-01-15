@@ -58,6 +58,8 @@ public abstract class MixinEntity {
   @Shadow
   public abstract boolean damage(DamageSource source, float amount);
 
+  @Shadow public World world;
+
   @Inject(
       method = "<init>",
       at =
@@ -74,7 +76,7 @@ public abstract class MixinEntity {
     var block = getWorld().getBlockState(getBlockPos()).getBlock();
 
     if ((Object) this instanceof LivingEntity && block instanceof FluidBlock) {
-      if (block instanceof Boilable && ((Boilable) block).isBoiling()) {
+      if (block instanceof Boilable && ((Boilable) block).isBoiling(world, getBlockPos())) {
         // setBoilingTicks(getBoilingTicks() + 1);
         if (getBoilingTicks() == 0) {
           setBoilingFor(4);

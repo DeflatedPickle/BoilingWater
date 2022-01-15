@@ -2,44 +2,80 @@
 
 package com.deflatedpickle.boilingwater.mixin;
 
+import com.deflatedpickle.boilingwater.BoilingWater;
 import com.deflatedpickle.boilingwater.api.Boilable;
+import com.deflatedpickle.boilingwater.api.HasHeat;
 import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
+import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.fluid.LavaFluid;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.state.StateManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
+import org.jetbrains.annotations.NotNull;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@SuppressWarnings({"UnusedMixin", "unused"})
+@SuppressWarnings({"UnusedMixin", "unused", "deprecation"})
 @Mixin(FluidBlock.class)
-public abstract class MixinFluidBlock extends Block implements Boilable {
-  public boolean boiling = false;
+public abstract class MixinFluidBlock extends Block implements Boilable, HasHeat {
+  @Shadow @Final protected FlowableFluid fluid;
+
+  @Override
+  public int getHeat() {
+    if (fluid instanceof LavaFluid) {
+      return 100;
+    } else {
+      return 0;
+    }
+  }
 
   public MixinFluidBlock(Settings settings) {
     super(settings);
   }
 
-  @Override
-  public boolean isBoiling() {
-    return boiling;
+  @Redirect(
+      method = "<init>",
+      at =
+          @At(
+              value = "INVOKE",
+              target =
+                  "Lnet/minecraft/block/FluidBlock;setDefaultState(Lnet/minecraft/block/BlockState;)V"))
+  public void init(FluidBlock instance, BlockState state) {
+    this.setDefaultState(state.with(BoilingWater.INSTANCE.getBOILING(), 0));
   }
 
   @Override
-  public void setBoiling(boolean value) {
-    boiling = value;
+  public void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    super.appendProperties(builder);
+    builder.add(BoilingWater.INSTANCE.getBOILING());
+  }
+
+  @Override
+  public boolean isBoiling(@NotNull World world, @NotNull BlockPos pos) {
+    return world.getBlockState(pos).get(BoilingWater.INSTANCE.getBOILING()) > 0f;
+  }
+
+  @Override
+  public void setBoiling(World world, @NotNull BlockPos pos, BlockState state, int value) {
+    world.setBlockState(pos, state.with(BoilingWater.INSTANCE.getBOILING(), value));
   }
 
   public void update(BlockState state, WorldAccess world, BlockPos pos) {
@@ -93,7 +129,7 @@ public abstract class MixinFluidBlock extends Block implements Boilable {
   public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
     super.randomDisplayTick(state, world, pos, random);
 
-    if (isBoiling()) {
+    if (isBoiling(world, pos)) {
       ParticleEffect particle = null;
       SoundEvent sound = null;
       float volume = 0f;
@@ -119,5 +155,35 @@ public abstract class MixinFluidBlock extends Block implements Boilable {
         world.playSound(x, pos.getY(), z, sound, SoundCategory.BLOCKS, volume, pitch, true);
       }
     }
+  }
+
+  @Override
+  public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+    super.scheduledTick(state, world, pos, random);
+
+    var down = world.getBlockState(pos.down().down()).getBlock();
+    var east = world.getBlockState(pos.east().east()).getBlock();
+    var west = world.getBlockState(pos.west().west()).getBlock();
+    var north = world.getBlockState(pos.north().north()).getBlock();
+    var south = world.getBlockState(pos.south().south()).getBlock();
+    var up = world.getBlockState(pos.up().up()).getBlock();
+
+    var heat = 0;
+    if (down instanceof HasHeat) {
+      heat += ((HasHeat) down).getHeat();
+    } else if (east instanceof HasHeat) {
+      heat += ((HasHeat) east).getHeat() / 0.5;
+    } else if (west instanceof HasHeat) {
+      heat += ((HasHeat) west).getHeat() / 0.5;
+    } else if (north instanceof HasHeat) {
+      heat += ((HasHeat) north).getHeat() / 0.5;
+    } else if (south instanceof HasHeat) {
+      heat += ((HasHeat) south).getHeat() / 0.5;
+    } else if (up instanceof HasHeat) {
+      heat += ((HasHeat) up).getHeat() / 0.25;
+    }
+
+    world.createAndScheduleBlockTick(pos, this, 20);
+    ((Boilable) this).setBoiling(world, pos, state, heat);
   }
 }
