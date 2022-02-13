@@ -47,14 +47,18 @@ public abstract class MixinFluidBlock extends Block implements Boilable, HasHeat
     }
   }
 
+  public boolean valid(BlockState state) {
+    return state.getFluidState().getFluid() == Fluids.WATER;
+  }
+
   public void update(BlockState state, WorldAccess world, BlockPos pos) {
-    if (state.getFluidState().getFluid() == Fluids.WATER) {
+    if (valid(state)) {
       world.createAndScheduleBlockTick(pos, this, 20);
     }
   }
 
   @Override
-  public boolean isBoiling(World world, BlockPos pos) {
+  public boolean isBoiling(World world, @NotNull BlockPos pos) {
     return getTemperature(world, pos) > 0;
   }
 
@@ -130,7 +134,7 @@ public abstract class MixinFluidBlock extends Block implements Boilable, HasHeat
   public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
     super.randomDisplayTick(state, world, pos, random);
 
-    if (isBoiling(world, pos)) {
+    if (valid(state) && isBoiling(world, pos)) {
       ParticleEffect particle = null;
       SoundEvent sound = null;
       float volume = 0f;
