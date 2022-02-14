@@ -59,7 +59,7 @@ public abstract class MixinFluidBlock extends Block implements Boilable, HasHeat
 
   @Override
   public boolean isBoiling(World world, @NotNull BlockPos pos) {
-    return getTemperature(world, pos) > 0;
+    return valid(world.getBlockState(pos)) && getTemperature(world, pos) > 0;
   }
 
   @Override
@@ -134,7 +134,7 @@ public abstract class MixinFluidBlock extends Block implements Boilable, HasHeat
   public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
     super.randomDisplayTick(state, world, pos, random);
 
-    if (valid(state) && isBoiling(world, pos)) {
+    if (isBoiling(world, pos)) {
       ParticleEffect particle = null;
       SoundEvent sound = null;
       float volume = 0f;
