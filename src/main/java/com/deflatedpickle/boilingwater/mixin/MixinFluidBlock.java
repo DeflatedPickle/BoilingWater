@@ -4,7 +4,6 @@ package com.deflatedpickle.boilingwater.mixin;
 
 import com.deflatedpickle.boilingwater.api.Boilable;
 import com.deflatedpickle.boilingwater.api.HasHeat;
-import java.util.Random;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FluidBlock;
@@ -18,6 +17,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.random.RandomGenerator;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.NotNull;
@@ -131,7 +131,8 @@ public abstract class MixinFluidBlock extends Block implements Boilable, HasHeat
   }
 
   @Override
-  public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+  public void randomDisplayTick(
+      BlockState state, World world, BlockPos pos, RandomGenerator random) {
     super.randomDisplayTick(state, world, pos, random);
 
     if (isBoiling(world, pos)) {
@@ -149,12 +150,12 @@ public abstract class MixinFluidBlock extends Block implements Boilable, HasHeat
         particle = ParticleTypes.BUBBLE;
         sound = SoundEvents.BLOCK_BUBBLE_COLUMN_BUBBLE_POP;
         volume = 2.5f;
-        pitch = random.nextFloat(0.5f, 1);
+        pitch = 0.5f + random.nextFloat() * (1f - 0.5f);
       }
 
       if (particle != null && sound != null) {
-        var x = pos.getX() + random.nextDouble(1);
-        var z = pos.getZ() + random.nextDouble(1);
+        var x = pos.getX() + random.nextDouble();
+        var z = pos.getZ() + random.nextDouble();
 
         world.addParticle(particle, x, pos.getY() + 1, z, 0, 0, 0);
         world.playSound(x, pos.getY(), z, sound, SoundCategory.BLOCKS, volume, pitch, true);
