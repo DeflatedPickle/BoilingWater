@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@SuppressWarnings({"UnusedMixin", "rawtypes"})
+@SuppressWarnings({"UnusedMixin", "rawtypes", "ConstantConditions"})
 @Mixin(Entity.class)
 public abstract class MixinEntity {
   private static final TrackedData<Integer> BOILING_TICKS;

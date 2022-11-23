@@ -7,7 +7,7 @@ import net.minecraft.block.RedstoneTorchBlock;
 import net.minecraft.block.TorchBlock;
 import org.spongepowered.asm.mixin.Mixin;
 
-@SuppressWarnings({"unused", "UnusedMixin"})
+@SuppressWarnings({"unused", "UnusedMixin", "ConstantConditions"})
 @Mixin(TorchBlock.class)
 public class MixinTorchBlock implements HasHeat {
   @Override

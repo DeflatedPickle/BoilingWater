@@ -53,7 +53,7 @@ public abstract class MixinFluidBlock extends Block implements Boilable, HasHeat
 
   public void update(BlockState state, WorldAccess world, BlockPos pos) {
     if (valid(state)) {
-      world.createAndScheduleBlockTick(pos, this, 20);
+      world.scheduleBlockTick(pos, this, 20);
     }
   }
 
