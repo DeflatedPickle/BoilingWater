@@ -2,6 +2,7 @@
 
 package com.deflatedpickle.boilingwater.mixin;
 
+import com.deflatedpickle.boilingwater.BoilingWater;
 import com.deflatedpickle.boilingwater.api.Boilable;
 import com.deflatedpickle.boilingwater.api.HasHeat;
 import net.minecraft.block.Block;
@@ -29,7 +30,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@SuppressWarnings({"UnusedMixin", "unused"})
+@SuppressWarnings({"UnusedMixin", "unused", "deprecation"})
 @Mixin(FluidBlock.class)
 public abstract class MixinFluidBlock extends Block implements Boilable, HasHeat {
   @Shadow @Final protected FlowableFluid fluid;
@@ -41,7 +42,7 @@ public abstract class MixinFluidBlock extends Block implements Boilable, HasHeat
   @Override
   public int getHeat() {
     if (fluid instanceof LavaFluid) {
-      return 100;
+      return BoilingWater.FIRE;
     } else {
       return 0;
     }

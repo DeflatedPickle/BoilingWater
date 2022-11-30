@@ -2,6 +2,7 @@
 
 package com.deflatedpickle.boilingwater.mixin;
 
+import com.deflatedpickle.boilingwater.BoilingWater;
 import com.deflatedpickle.boilingwater.api.HasHeat;
 import net.minecraft.block.SoulFireBlock;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,6 +12,6 @@ import org.spongepowered.asm.mixin.Mixin;
 public class MixinSoulFireBlock implements HasHeat {
   @Override
   public int getHeat() {
-    return 50;
+    return BoilingWater.SOUL_FIRE;
   }
 }

@@ -16,6 +16,14 @@ object BoilingWater : ModInitializer {
     private const val AUTHOR = "$[author]"
     private const val VERSION = "$[version]"
 
+    const val REDSTONE_TORCH = 2
+    const val TORCH = 10
+    const val FIRE = 25
+    const val CAMPFIRE = 30
+    const val MAGMA = 50
+    const val SOUL_FIRE = 75
+    const val LAVA = 100
+
     override fun onInitialize(mod: ModContainer) {
         println(listOf(MOD_ID, NAME, GROUP, AUTHOR, VERSION))
     }
